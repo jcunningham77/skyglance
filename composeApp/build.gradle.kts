@@ -19,6 +19,10 @@ kotlin {
         }
     }
 
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
@@ -48,6 +52,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.runtime)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlin.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
@@ -93,7 +98,11 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
     compileOptions {
