@@ -38,6 +38,7 @@ kotlin {
             implementation(compose.preview)
             implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -57,6 +58,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.runtime.compose)
         }
 
         commonTest.dependencies {

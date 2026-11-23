@@ -116,6 +116,23 @@ class ForecastViewModelTest {
         }
 
     @Test
+    fun onPermissionResultOverridesTheRepositorysAlwaysFalsePermanentlyFlag() =
+        runTest {
+            // FusedLocationProvider can never actually know "permanently" (see its own comment),
+            // so the fake mirrors that by always reporting false — the real answer has to come
+            // from the live permission callback via onPermissionResult, not the repository.
+            val repository = FakeForecastRepository()
+            repository.refreshResult = RefreshResult.Failure(RefreshFailure.PermissionDenied(permanently = false))
+            val (viewModel, states) = viewModelCollecting(repository)
+
+            viewModel.onPermissionResult(permanentlyDenied = true)
+            runCurrent()
+
+            val state = assertIs<ForecastUiState.PermissionNeeded>(states.last())
+            assertTrue(state.permanently)
+        }
+
+    @Test
     fun permissionDeniedWithExistingCacheShowsContentWithStaleBanner() =
         runTest {
             val repository = FakeForecastRepository()

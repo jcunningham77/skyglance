@@ -34,8 +34,14 @@ class ForecastViewModel(
     private val refreshState = MutableStateFlow<RefreshState>(RefreshState.Idle)
     private val selectedIndex = MutableStateFlow(0)
 
+    // LocationProvider can't tell "never asked" from "denied forever" apart (see
+    // FusedLocationProvider), so it always reports false. The only place that distinction is ever
+    // actually knowable is right after a live permission request's callback — onPermissionResult
+    // records it here, overriding what the repository reports.
+    private val knownPermanentlyDenied = MutableStateFlow(false)
+
     val uiState: StateFlow<ForecastUiState> =
-        combine(latestForecast, preferencesRepository.unit, refreshState, selectedIndex, ::toUiState)
+        combine(latestForecast, preferencesRepository.unit, refreshState, selectedIndex, knownPermanentlyDenied, ::toUiState)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), ForecastUiState.Loading)
 
     init {
@@ -51,7 +57,13 @@ class ForecastViewModel(
 
     fun onScreenStarted() = refresh()
 
-    fun onPermissionResult() = refresh()
+    /** [permanentlyDenied] is only meaningful right after a live permission request's callback —
+     * see [com.skyglance.location.LocationAccess]. Defaults to false for callers (e.g. retrying
+     * after a cold-check denial) that have no fresher answer than the one already known. */
+    fun onPermissionResult(permanentlyDenied: Boolean = knownPermanentlyDenied.value) {
+        knownPermanentlyDenied.value = permanentlyDenied
+        refresh()
+    }
 
     fun onRetry() = refresh()
 
@@ -88,11 +100,12 @@ class ForecastViewModel(
         unit: TempUnit,
         refresh: RefreshState,
         selectedIndex: Int,
+        permanentlyDenied: Boolean,
     ): ForecastUiState {
         if (forecast == null) {
             return when (refresh) {
                 RefreshState.Idle, RefreshState.Refreshing -> ForecastUiState.Loading
-                is RefreshState.Failed -> noForecastFailureState(refresh.reason)
+                is RefreshState.Failed -> noForecastFailureState(refresh.reason, permanentlyDenied)
             }
         }
         val failed = refresh as? RefreshState.Failed
@@ -108,9 +121,12 @@ class ForecastViewModel(
         )
     }
 
-    private fun noForecastFailureState(reason: RefreshFailure): ForecastUiState =
+    private fun noForecastFailureState(
+        reason: RefreshFailure,
+        permanentlyDenied: Boolean,
+    ): ForecastUiState =
         when (reason) {
-            is RefreshFailure.PermissionDenied -> ForecastUiState.PermissionNeeded(reason.permanently)
+            is RefreshFailure.PermissionDenied -> ForecastUiState.PermissionNeeded(permanentlyDenied)
             RefreshFailure.LocationUnsupported -> ForecastUiState.Unsupported
             RefreshFailure.LocationUnavailable, RefreshFailure.Network, RefreshFailure.Server ->
                 ForecastUiState.Error(failureMessage(reason))
