@@ -11,17 +11,15 @@ import com.skyglance.data.WeatherApi
 import com.skyglance.data.internal.createHttpClient
 import com.skyglance.data.internal.createSettings
 import com.skyglance.location.LocationProvider
-import com.skyglance.location.UnimplementedLocationProvider
+import com.skyglance.location.createLocationProvider
 import io.ktor.client.HttpClient
 import org.koin.dsl.module
 import kotlin.time.Clock
 
 /**
  * DI bindings for shared/commonMain (repositories, API clients, cache). [platformContext] is the
- * Android `Application` on Android, unused on iOS — see [createSettings].
- *
- * [LocationProvider] is [UnimplementedLocationProvider] for now; the Android location phase
- * replaces this with a real `FusedLocationProviderClient`-backed implementation and an iOS stub.
+ * Android `Application` on Android, unused on iOS — see [createSettings] and
+ * [createLocationProvider].
  */
 fun sharedModule(platformContext: Any?) =
     module {
@@ -33,7 +31,7 @@ fun sharedModule(platformContext: Any?) =
         single { GeocodeApi(get()) }
         single { ForecastCache(get()) }
 
-        single<LocationProvider> { UnimplementedLocationProvider() }
+        single<LocationProvider> { createLocationProvider(platformContext) }
         single<PreferencesRepository> { PreferencesRepositoryImpl(get()) }
         single<ForecastRepository> { ForecastRepositoryImpl(get(), get(), get(), get(), get()) }
     }

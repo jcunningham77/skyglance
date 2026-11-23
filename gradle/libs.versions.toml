@@ -17,6 +17,7 @@ android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
 androidx-activity = "1.11.0"
+androidxCore = "1.17.0"
 playServicesLocation = "21.3.0"
 
 [libraries]
@@ -40,7 +41,9 @@ multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-t
 #Android
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+kotlin-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlin-coroutines" }
 
 #iOS
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }

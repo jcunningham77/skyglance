@@ -29,7 +29,6 @@ internal class ForecastRepositoryImpl(
 ) : ForecastRepository {
     private val refreshMutex = Mutex()
 
-
     override val forecast: Flow<Forecast> =
         cache.forecast
             .filterNotNull()
