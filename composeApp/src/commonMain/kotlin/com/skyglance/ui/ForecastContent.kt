@@ -49,15 +49,15 @@ fun ForecastContent(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // targetSdk 36 (Android 15+) enforces edge-to-edge, so the screen must claim its own inset
-    // space rather than letting content draw under the status/navigation bars.
-    Surface(modifier = modifier.fillMaxSize().safeDrawingPadding()) {
-        when (state) {
-            ForecastUiState.Loading -> LoadingState()
-            is ForecastUiState.Content -> ContentState(state, onDaySelected, onUnitSelected, onRetry)
-            is ForecastUiState.PermissionNeeded -> PermissionNeededState(state.permanently, onRequestPermission, onOpenSettings)
-            ForecastUiState.Unsupported -> UnsupportedState()
-            is ForecastUiState.Error -> ErrorState(state.message, onRetry)
+    Surface(modifier = modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+            when (state) {
+                ForecastUiState.Loading -> LoadingState()
+                is ForecastUiState.Content -> ContentState(state, onDaySelected, onUnitSelected, onRetry)
+                is ForecastUiState.PermissionNeeded -> PermissionNeededState(state.permanently, onRequestPermission, onOpenSettings)
+                ForecastUiState.Unsupported -> UnsupportedState()
+                is ForecastUiState.Error -> ErrorState(state.message, onRetry)
+            }
         }
     }
 }
