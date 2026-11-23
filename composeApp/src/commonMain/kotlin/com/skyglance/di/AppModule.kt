@@ -11,6 +11,6 @@ private var koinStarted = false
 fun initKoin(platformContext: Any? = null) {
     if (!koinStarted) {
         koinStarted = true
-        startKoin { modules(sharedModule, appModule) }
+        startKoin { modules(sharedModule(platformContext), appModule) }
     }
 }

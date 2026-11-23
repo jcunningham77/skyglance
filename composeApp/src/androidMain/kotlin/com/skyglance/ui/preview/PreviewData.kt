@@ -5,12 +5,25 @@ import com.skyglance.domain.DayForecast
 import com.skyglance.domain.Forecast
 import com.skyglance.domain.TempUnit
 import com.skyglance.presentation.ForecastUiState
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 
-/** Sample forecasts for previews, including the edge cases the model review checklist calls out. */
+/**
+ * Sample forecasts for previews, including the edge cases the model review checklist calls out.
+ * Dates are built relative to the real "today" (not hardcoded) so the "Today" label on day 0
+ * stays correct regardless of when these previews are actually rendered.
+ */
 internal object PreviewData {
+    private val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+
+    private fun dateOffset(days: Int): LocalDate = today.plus(days, DateTimeUnit.DAY)
+
     private fun day(
         date: LocalDate,
         condition: Condition,
@@ -26,13 +39,13 @@ internal object PreviewData {
     // Unknown-condition edge case — see sevenDaysWithMissingData for that.
     val sevenDays =
         listOf(
-            day(LocalDate(2026, 11, 24), Condition.Clear, 18.0, 6.0),
-            day(LocalDate(2026, 11, 25), Condition.PartlyCloudy, 16.0, 5.0),
-            day(LocalDate(2026, 11, 26), Condition.Overcast, 14.0, 7.0),
-            day(LocalDate(2026, 11, 27), Condition.Rain, 12.0, 8.0, precip = 80),
-            day(LocalDate(2026, 11, 28), Condition.Snow, -2.0, -8.0, precip = 60),
-            day(LocalDate(2026, 11, 29), Condition.Thunderstorm, 22.0, 15.0, precip = 90),
-            day(LocalDate(2026, 11, 30), Condition.Showers, 19.0, 11.0, precip = 70),
+            day(dateOffset(0), Condition.Clear, 18.0, 6.0),
+            day(dateOffset(1), Condition.PartlyCloudy, 16.0, 5.0),
+            day(dateOffset(2), Condition.Overcast, 14.0, 7.0),
+            day(dateOffset(3), Condition.Rain, 12.0, 8.0, precip = 80),
+            day(dateOffset(4), Condition.Snow, -2.0, -8.0, precip = 60),
+            day(dateOffset(5), Condition.Thunderstorm, 22.0, 15.0, precip = 90),
+            day(dateOffset(6), Condition.Showers, 19.0, 11.0, precip = 70),
         )
 
     val sixDays = sevenDays.take(6)
@@ -43,7 +56,7 @@ internal object PreviewData {
     val sevenDaysWithMissingData =
         sevenDays.dropLast(1) +
             day(
-                date = LocalDate(2026, 11, 30),
+                date = dateOffset(6),
                 condition = Condition.Unknown,
                 highC = 40.0,
                 lowC = 30.0,
@@ -54,14 +67,14 @@ internal object PreviewData {
             )
 
     val nullExtrasDay =
-        day(LocalDate(2026, 11, 24), Condition.Fog, 10.0, 4.0, precip = null, windKmh = null, sunrise = null, sunset = null)
+        day(dateOffset(0), Condition.Fog, 10.0, 4.0, precip = null, windKmh = null, sunrise = null, sunset = null)
 
     // 41C ≈ 106F — three digits in Fahrenheit.
-    val threeDigitDay = day(LocalDate(2026, 11, 24), Condition.Clear, 41.0, 28.0)
+    val threeDigitDay = day(dateOffset(0), Condition.Clear, 41.0, 28.0)
 
-    val negativeDay = day(LocalDate(2026, 11, 24), Condition.Snow, -5.0, -15.0)
+    val negativeDay = day(dateOffset(0), Condition.Snow, -5.0, -15.0)
 
-    val fetchedAt = Instant.parse("2026-11-24T12:00:00Z")
+    val fetchedAt = Clock.System.now()
 
     val forecast =
         Forecast(
@@ -89,7 +102,7 @@ internal object PreviewData {
 
     val staleContentState =
         contentState.copy(
-            staleSince = Instant.parse("2026-11-24T09:00:00Z"),
+            staleSince = fetchedAt - 3.hours,
             staleReason = "No connection",
         )
 }

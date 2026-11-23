@@ -18,6 +18,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +27,11 @@ import androidx.compose.ui.unit.dp
 import com.skyglance.domain.TempUnit
 import com.skyglance.presentation.ForecastUiState
 import com.skyglance.ui.format.formatStaleMessage
-import com.skyglance.ui.format.toWeekdayLabel
+import com.skyglance.ui.format.toDayLabel
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 
 /**
  * Stateless screen: renders any [ForecastUiState] with no ViewModel, Koin or repository. Day
@@ -118,6 +122,7 @@ private fun ContentState(
     val days = state.forecast.days
     val selectedIndex = state.selectedIndex.coerceIn(days.indices)
     val pagerState = rememberPagerState(initialPage = selectedIndex) { days.size }
+    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
 
     // Tap: selectedIndex changed externally (a box was tapped, or a new forecast arrived) ->
     // scroll the pager to match it.
@@ -165,7 +170,7 @@ private fun ContentState(
             DayDetailPane(
                 day = day,
                 unit = state.unit,
-                dayLabel = if (page == 0) "Today" else day.date.toWeekdayLabel(),
+                dayLabel = day.date.toDayLabel(today),
             )
         }
     }

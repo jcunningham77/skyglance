@@ -8,6 +8,8 @@ import kotlin.time.Instant
 
 fun LocalDate.toWeekdayLabel(): String = dayOfWeek.toLocalizedAbbreviation()
 
+fun LocalDate.toDayLabel(today: LocalDate): String = if (this == today) "Today" else toWeekdayLabel()
+
 fun LocalDate.toFullDateLabel(): String {
     val monthLabel = (month.ordinal + 1).toString().padStart(2, '0')
     val dayLabel = day.toString().padStart(2, '0')
