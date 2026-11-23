@@ -1,10 +1,15 @@
 package com.skyglance.di
 
+import com.skyglance.presentation.ForecastViewModel
 import org.koin.core.context.startKoin
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-/** DI bindings for composeApp/commonMain (ViewModels). Empty until Phase 1 defines them. */
-val appModule = module {}
+/** DI bindings for composeApp/commonMain (ViewModels). */
+val appModule =
+    module {
+        viewModel { ForecastViewModel(get(), get(), get()) }
+    }
 
 private var koinStarted = false
 
