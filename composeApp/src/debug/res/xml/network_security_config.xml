@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only (merged from src/debug/, never src/release/): trusts user-installed CAs
+     like Charles Proxy's root certificate, so HTTPS can be inspected without rooting the device. -->
+<network-security-config>
+    <base-config>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
