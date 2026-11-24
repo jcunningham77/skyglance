@@ -45,15 +45,20 @@ Skyglance is a Kotlin Multiplatform project split into a `shared` module (reposi
 **Marketing**
 - A real iOS location implementation, as a fast follow, would let us distribute to many more potential users.
 
-## Topics for discussion
+## Topics for discussion *(listed in order of importance, descending)*
 
-- **[Repository API](shared/src/commonMain/kotlin/com/skyglance/data/ForecastRepositoryImpl.kt): one data flow, or data and refresh outcome merged?**<br>
+- **[ForecastRepository API design](shared/src/commonMain/kotlin/com/skyglance/data/ForecastRepositoryImpl.kt#L32)**
+  - **One data flow, or data and refresh outcome merged?**<br> 
   I considered folding the cached forecast and the refresh result into a single flow instead of exposing them separately. Kept them apart because the cache is durable state that should replay to late subscribers, while a refresh outcome is a one-shot event that shouldn't replay or force a nullable `Forecast` back into the API.
-- **[AGP/Gradle version](gradle/libs.versions.toml#L11) forces a specific Gradle JDK.**<br>
-  I stuck with a proven AGP 8.13.2/Gradle 8.14.3 pairing for Compose Multiplatform used on previous projects rather than an unverified AGP 9 split. This meant pinning `androidx.lifecycle:lifecycle-viewmodel` to 2.9.6 (2.10+ needs AGP 9.1+/compileSdk 37). It also means Android Studio's Gradle JDK setting has to point at JDK ≤24 (JBR or Corretto 21), since Gradle 8.14.3 doesn't support newer ones.
+  - **Keeping the cache flow separate from the refresh trigger.**<br> 
+  What counts as valid cached data (`forecast`) and what triggers a refresh (`refresh()`) are two separate concerns, each free to change without touching the other. I've previously built repositories where both lived in one member, and it was more bug-prone: a change meant for the triggering logic could easily affect cache validity, or vice versa, without that dependency being obvious from the code.
+- **Order of implementation: UI before data.**<br>
+  Building and reviewing the UI against hard-coded preview data first helped later phases, like the network data mapping, go much smoother.
 - **[Open-Meteo's response](shared/src/commonMain/kotlin/com/skyglance/data/mapper/ForecastMapper.kt#L33) is columnar, not row-oriented.**<br>
   The `daily` block is several parallel arrays sharing a common index rather than a list of per-day objects, which is typical for time-series/scientific APIs and columnar storage — it mirrors how the backend likely stores the data and avoids repeating key names per record. The tradeoff is that every client has to "zip" the arrays back into per-day records itself, and the format is silently fragile if the arrays ever disagree in length, which is why the mapper computes a shared prefix instead of assuming they match.
 - **Bug found during review: a [stale cache](shared/src/commonMain/kotlin/com/skyglance/domain/Forecast.kt#L26) could mislabel old data as "[Today](composeApp/src/commonMain/kotlin/com/skyglance/ui/format/Formatting.kt#L11)".**<br>
   The cache had no expiration check and the UI labeled the first day "Today" by list position rather than by date, so an app reopened after days unused with a failing refresh would confidently show week-old dates as current instead of just stale. Fixed by comparing each day's real date against the actual current date for the "Today" label, and by treating a cached forecast whose last day has already passed as equivalent to no cache at all.
-- **Order of implementation: UI before data.**<br>
-  Building and reviewing the UI against hard-coded preview data first helped later phases, like the network data mapping, go much smoother.
+
+- **[AGP/Gradle version](gradle/libs.versions.toml#L11) forces a specific Gradle JDK.**<br>
+  I stuck with a proven AGP 8.13.2/Gradle 8.14.3 pairing for Compose Multiplatform used on previous projects rather than an unverified AGP 9 split. This meant pinning `androidx.lifecycle:lifecycle-viewmodel` to 2.9.6 (2.10+ needs AGP 9.1+/compileSdk 37). It also means Android Studio's Gradle JDK setting has to point at JDK ≤24 (JBR or Corretto 21), since Gradle 8.14.3 doesn't support newer ones.
+ 
