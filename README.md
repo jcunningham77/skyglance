@@ -23,8 +23,7 @@ Skyglance is a Kotlin Multiplatform project split into a `shared` module (reposi
 
 ## UX
 
-![Main screen, light mode](screenshots/content-fresh-light.png)
-![Main screen, dark mode](screenshots/content-fresh-dark.png)
+<img src="screenshots/content-fresh-light.png" alt="Main screen, light mode" width="240"> <img src="screenshots/content-fresh-dark.png" alt="Main screen, dark mode" width="238">
 
 - Tap a day in the top row, or swipe the detail pane, to switch days — both are the same `selectedIndex`, so they stay in sync.
 - The °F/°C toggle is a pure display conversion: it never triggers a refetch, and the cache always stores Celsius.
@@ -37,9 +36,6 @@ Skyglance is a Kotlin Multiplatform project split into a `shared` module (reposi
 - Firebase Crashlytics, to catch crashes that don't show up in the limited local testing this project got.
 - Instrumented tests to surface Koin DI wiring mistakes (a missing binding) at build time rather than at runtime.
 - A Paparazzi or Compose Preview Screenshot Testing pipeline, publishing preview renders (see UX above) somewhere browsable in CI, plus regression protection against unintended visual changes.
-
-**UX**
-- Use condition photo backgrounds instead of gradients in the detail pane, per the stretch phase in the plan.
 
 **Monetization**
 - Authentication, if saved locations or cross-device sync are ever added.
